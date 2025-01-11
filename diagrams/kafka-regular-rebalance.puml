@@ -1,0 +1,21 @@
+@startuml
+
+consumer -> consumer: revoke partition
+activate group_coordinator
+consumer -> group_coordinator: JoinGroup Request
+consumer <- group_coordinator: JoinGroup Response
+
+create group_leader
+group_leader <- group_coordinator: JoinGroup Response (group leader chosen at this point)
+deactivate group_coordinator
+
+group_leader -> group_leader: computes partition assignments
+
+group_leader -> group_coordinator: SyncGroup Request (with partition assignments for all consumers)
+activate group_coordinator
+consumer -> group_coordinator: SyncGroup Request (asking for assignment)
+consumer <- group_coordinator: SyncGroup Response (receives assignments)
+group_leader <- group_coordinator: SyncGroup Response (completes protocol)
+deactivate group_coordinator
+
+@enduml

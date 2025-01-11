@@ -1,0 +1,13 @@
+@startuml
+
+==Events received in order==
+producer -> consumer: Event A
+producer -> consumer: Event B
+
+
+==Event A failed                   ==
+producer -> producer: Event A failed
+producer -> consumer: Event B
+producer -> consumer: Event A replayed
+
+@enduml

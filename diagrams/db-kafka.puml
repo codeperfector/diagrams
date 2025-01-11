@@ -1,0 +1,10 @@
+@startuml
+
+input_topic -> consumer: poll messages
+consumer -> consumer: process messages
+consumer -> db: write data
+db -> consumer: ack
+consumer -> output_topic: produce output messages
+consumer -> input_topic: commit poll
+
+@enduml

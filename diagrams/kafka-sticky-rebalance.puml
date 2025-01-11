@@ -1,0 +1,26 @@
+@startuml
+
+== first rebalance ==
+consumer1 -> group_coordinator: partitions 1,2 owned
+activate group_coordinator
+consumer2 -> group_coordinator: partitions 3,4 owned
+consumer3 -> group_coordinator: partitions 5,6 owned
+consumer1 <- group_coordinator: owner partitions 1
+consumer2 <- group_coordinator: owner partitions 3,4
+consumer3 <- group_coordinator: owner partitions 5,6
+deactivate group_coordinator
+
+consumer1 -> consumer1: revoke partition 2 which is unassigned
+
+== second rebalance ==
+consumer1 -> group_coordinator: partition 2 to reassign
+activate group_coordinator
+consumer2 -> group_coordinator: no partitions to reassign
+consumer3 -> group_coordinator: no partitions to reassign
+consumer1 <- group_coordinator: no change
+consumer2 <- group_coordinator: no change
+consumer3 <- group_coordinator: owner partitions 2
+deactivate group_coordinator
+consumer3 -> consumer3: add partition 2 (now owns 2, 5, 6)
+
+@enduml
