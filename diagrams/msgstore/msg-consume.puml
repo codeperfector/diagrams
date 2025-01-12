@@ -1,10 +1,17 @@
 @startuml
 
 consumer -> consumer: determine topic
+consumer -> consumer: determine consumer id
 consumer <- sharder: fetch partition (may use db-based or static assignment)
-consumer -> consumer: select time x = N hrs in the past and corresponding num-periods-since-epoch
+
+consumer <- storage: fetch object at folder "topic name / partition / consumer id / read-offset"
+
+alt no read offset
+    consumer -> consumer: select read offset as time x = N hrs in the past and corresponding num-periods-since-epoch
+end alt
+
 loop until folder exists
-    consumer <- storage: read objects at folder for period "now - x" (topic name / partition name / time period)
+    consumer <- storage: read folder for period "now - x" (topic name / partition name / time period)
     consumer -> consumer: decrement x
 end loop
 
@@ -12,7 +19,8 @@ loop until app exits
 
     loop until folder does not exist
         consumer <- storage: read objects at folder for period "now - x" (topic name / partition name / time period)
-        consumer -> consumer: decrement x
+        consumer -> storage: update read offset in folder "topic name / partition / consumer id / read-offset"
+        consumer -> consumer: decrementat
     end loop
 
     consumer -> consumer: wait
