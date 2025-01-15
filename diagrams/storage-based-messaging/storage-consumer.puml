@@ -1,0 +1,38 @@
+@startuml
+
+consumer -> consumer: determine topic
+consumer -> consumer: determine consumer id
+consumer <- sharder: fetch partition (may use db-based or static assignment)
+note right consumer
+  An external mechanism is needed to guarantee
+  exclusive assignment to each consumer
+end note
+
+consumer <- storage: read offset R = fetch object at folder "topic name / partition / consumer id / read-offset"
+
+alt no read offset
+    consumer -> consumer:  read offset R = select time N hrs in the past and obtain corresponding num-periods-since-epoch
+end alt
+
+consumer -> consumer:  x = 0
+
+loop until folder exists or x == now()
+    consumer <- storage: read folder for period "R + x" (topic name / partition name / time period)
+    consumer -> consumer: increment x
+end loop
+
+loop until app exits
+
+    loop until folder does not exist
+        consumer <- storage: read objects at folder for period "R + x" (topic name / partition name / time period)
+        consumer -> consumer: sort by event time
+        consumer -> consumer: process messages in order of event time
+        consumer -> storage: update read offset in folder "topic name / partition / consumer id / read-offset"
+        consumer -> consumer: increment x
+    end loop
+
+    consumer -> consumer: wait for producer to produce more messages
+end loop
+
+
+@enduml

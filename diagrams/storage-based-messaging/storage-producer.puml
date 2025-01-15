@@ -1,0 +1,12 @@
+@startuml
+
+producer -> producer: determine topic name and producer unique id
+producer -> producer: accumulate batch of messages
+producer -> producer: determine partition for each message
+producer -> producer: group batches by partition
+loop over partition
+    producer -> producer: using current time get num of minute periods since epoch (or whatever time period)
+    producer -> storage: upload batch of messages to object "topic name / partition name / time period / producer id"
+end loop
+
+@enduml
