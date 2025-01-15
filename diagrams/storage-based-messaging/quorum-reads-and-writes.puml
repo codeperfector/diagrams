@@ -1,0 +1,27 @@
+@startuml
+
+== three storage regions needed for quorum writes ==
+app -> storage1: write succeeds
+app -> storage2: write succeeds
+app ->x storage3: write fails but quorum is achieved, no retry
+
+== if quorum not achieved for writes, app must retry ==
+app -> storage1: write succeeds
+app ->x storage2: write fails
+app ->x storage3: write fails
+app -> storage2: retry succeeds
+app ->x storage3: retry fails but quorum is achieved, no retry
+
+== three storage regions needed for quorum reads ==
+app <- storage1: read succeeds
+app <- storage2: read succeeds
+app x<- storage3: read fails but quorum is achieved, no retry
+
+== if quorum not achieved for reads, app must retry ==
+app <- storage1: read succeeds
+app x<- storage2: read fails
+app x<- storage3: read fails
+app <- storage2: retry succeeds
+app x<- storage3: retry fails but quorum is achieved, no retry
+
+@enduml
